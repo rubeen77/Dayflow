@@ -1,6 +1,6 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { Redis } from '@upstash/redis';
-import { HttpError } from './config.js';
+import { HttpError, redisConfiguration } from './config.js';
 
 export const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 export const random = () => randomBytes(32).toString('base64url');
@@ -20,12 +20,12 @@ export function unseal<T>(value: string, key: string, context: string): T {
   return JSON.parse(Buffer.concat([cipher.update(data), cipher.final()]).toString('utf8')) as T;
 }
 export class Vault {
-  private redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL!,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-    automaticDeserialization: false,
-  });
+  private redis: Redis;
   private key = process.env.GOOGLE_TOKEN_ENCRYPTION_KEY!;
+  constructor() {
+    const { url, token } = redisConfiguration();
+    this.redis = new Redis({ url: url!, token: token!, automaticDeserialization: false });
+  }
   async get<T>(id: string): Promise<T | null> {
     const data = await this.redis.get<string>(`dayflow:${id}`);
     return data ? unseal<T>(data, this.key, id) : null;

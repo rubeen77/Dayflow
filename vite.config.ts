@@ -14,6 +14,8 @@ export default defineConfig(({ mode }) => {
     'GOOGLE_TOKEN_ENCRYPTION_KEY',
     'UPSTASH_REDIS_REST_URL',
     'UPSTASH_REDIS_REST_TOKEN',
+    'KV_REST_API_URL',
+    'KV_REST_API_TOKEN',
     'CRON_SECRET',
   ]) {
     if (env[key] && !process.env[key]) process.env[key] = env[key];
